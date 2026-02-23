@@ -7,6 +7,8 @@ import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
 
+import java.time.OffsetDateTime;
+
 @Provider
 public class ArticleNotFoundExceptionMapper
         implements ExceptionMapper<ArticleNotFoundException> {
@@ -21,7 +23,8 @@ public class ArticleNotFoundExceptionMapper
                 Response.Status.NOT_FOUND.getStatusCode(),
                 "Not Found",
                 exception.getMessage(),
-                uriInfo.getPath()
+                uriInfo.getPath(),
+                OffsetDateTime.now()
         );
 
         return Response.status(Response.Status.NOT_FOUND)
