@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,9 +31,10 @@ public class ConstraintViolationExceptionMapper
 
         ErrorResponse error = new ErrorResponse(
                 Response.Status.BAD_REQUEST.getStatusCode(),
-                "Bad Request",
+                Response.Status.BAD_REQUEST.getReasonPhrase(),
                 message,
-                uriInfo.getPath()
+                uriInfo.getPath(),
+                OffsetDateTime.now()
         );
 
         return Response.status(Response.Status.BAD_REQUEST)
