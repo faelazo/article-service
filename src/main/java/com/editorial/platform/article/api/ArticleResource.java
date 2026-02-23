@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -42,6 +43,14 @@ public class ArticleResource {
                     schema = @Schema(implementation = PagedResponse.class)
             )),
     })
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid query parameters",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )
+    )
     public PagedResponse<ArticleResponse> getArticles(@QueryParam("page")
                                                           @DefaultValue("0")
                                                           @Parameter(description = "Page number (starting from 0)", example = "0")
@@ -49,8 +58,21 @@ public class ArticleResource {
                                                       @QueryParam("size") @DefaultValue("10")
                                                       @Parameter(description = "Size number must be between 1 and 100", example = "10")
                                                       @Min(value = 1, message = "size must be >= 1")
-                                                      @Max(value = 100, message = "size must be <= 100") int size) {
-        return service.listAll(page, size);
+                                                      @Max(value = 100, message = "size must be <= 100") int size,
+                                                      @QueryParam("sortBy")
+                                                          @Pattern(regexp = "id|title|author", message = "Invalid sort field")
+                                                          @DefaultValue("id")
+                                                          String sortBy,
+                                                      @QueryParam("direction")
+                                                          @Pattern(regexp = "asc|desc", message = "direction must be asc or desc")
+                                                          @DefaultValue("asc")
+                                                          String direction,
+                                                      @QueryParam("title")
+                                                          String title,
+                                                      @QueryParam("author")
+                                                          String author
+                                                      ) {
+        return service.listAll(page, size, sortBy, direction, title, author);
     }
 
     @GET

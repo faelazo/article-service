@@ -5,22 +5,57 @@ import com.editorial.platform.article.domain.Article;
 import com.editorial.platform.article.dto.ArticleRequest;
 import com.editorial.platform.article.dto.ArticleResponse;
 import com.editorial.platform.article.dto.PagedResponse;
+import io.quarkus.panache.common.Sort;
+import io.quarkus.panache.common.Page;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import io.quarkus.panache.common.Page;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
 public class ArticleService {
 
-    public PagedResponse<ArticleResponse> listAll(int page, int size) {
-        PanacheQuery<Article> articles = Article.findAll();
+    public PagedResponse<ArticleResponse> listAll(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            String title,
+            String author
+            ) {
 
-        long totalElements = articles.count();
+        Sort sort = direction.equalsIgnoreCase("desc")? Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
 
-        List<ArticleResponse> content = articles.page(Page.of(page, size)).list().stream().map(this::toResponse).toList();
+        StringBuilder queryBuilder = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+
+        if (title != null && !title.isBlank()) {
+            queryBuilder.append("lower(title) like ?1");
+            params.add("%" + title.toLowerCase() + "%");
+        }
+
+        if (author != null && !author.isBlank()) {
+            if (!queryBuilder.isEmpty()) {
+                queryBuilder.append(" and ");
+            }
+            queryBuilder.append("lower(author) like ?").append(params.size() + 1);
+            params.add("%" + author.toLowerCase() + "%");
+        }
+
+        PanacheQuery<Article> query;
+
+        if (queryBuilder.isEmpty()) {
+            query = Article.findAll(sort);
+        } else {
+            query = Article.find(queryBuilder.toString(), sort, params.toArray());
+        }
+
+
+        long totalElements = query.count();
+
+        List<ArticleResponse> content = query.page(Page.of(page, size)).list().stream().map(this::toResponse).toList();
 
         int totalPages = (int) Math.ceil((double) totalElements/size);
 
