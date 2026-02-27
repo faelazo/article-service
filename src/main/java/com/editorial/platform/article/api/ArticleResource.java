@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
@@ -31,6 +32,9 @@ public class ArticleResource {
 
     @Inject
     ArticleService service;
+
+    @ConfigProperty(name = "articles.default-page-size", defaultValue = "10")
+    int defaultPageSize;
 
     @GET
     @Operation(
@@ -55,10 +59,10 @@ public class ArticleResource {
                                                           @DefaultValue("0")
                                                           @Parameter(description = "Page number (starting from 0)", example = "0")
                                                           @Min(value = 0, message = "page must be >= 0") int page,
-                                                      @QueryParam("size") @DefaultValue("10")
+                                                      @QueryParam("size")
                                                       @Parameter(description = "Size number must be between 1 and 100", example = "10")
                                                       @Min(value = 1, message = "size must be >= 1")
-                                                      @Max(value = 100, message = "size must be <= 100") int size,
+                                                      @Max(value = 100, message = "size must be <= 100") Integer size,
                                                       @QueryParam("sortBy")
                                                           @Pattern(regexp = "id|title|author", message = "Invalid sort field")
                                                           @DefaultValue("id")
@@ -72,7 +76,8 @@ public class ArticleResource {
                                                       @QueryParam("author")
                                                           String author
                                                       ) {
-        return service.listAll(page, size, sortBy, direction, title, author);
+        int effectiveSize = (size == null) ? defaultPageSize : size;
+        return service.listAll(page, effectiveSize, sortBy, direction, title, author);
     }
 
     @GET

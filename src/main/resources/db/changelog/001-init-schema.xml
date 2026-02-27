@@ -10,7 +10,7 @@
         <changeSet id="1" author="Rafael Moreno">
 
             <createSequence
-                    sequenceName="Article_SEQ"
+                    sequenceName="article_seq"
                     startValue="1"
                     incrementBy="50"/>
 
