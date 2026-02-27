@@ -138,6 +138,8 @@ public class ArticleResourceTest {
 
         given().when().get("/articles?page=1&size=10").then().statusCode(200).body("totalElements", equalTo(15)).body("content.size()", equalTo(5)).body("totalPages", equalTo(2))
                 .body("page", equalTo(1)).body("content[0].title", equalTo("Clean Architecture 10"));;
+
+
     }
 /*
     @Test
